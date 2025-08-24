@@ -1,0 +1,22 @@
+name: Gemini PR Review
+on:
+  pull_request:
+    types: [opened, ready_for_review, reopened, synchronize]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run Gemini CLI (PR review)
+        uses: google-github-actions/run-gemini-cli@v0.1.11
+        with:
+          gemini_api_key: ${{ secrets.GEMINI_API_KEY }}
+          prompt: "Fais une revue concise de cette PR et propose des diffs minimaux si nécessaire."
+          settings: |
+            {"model":"gemini-2.5-pro",
+             "instructions":"FR. Respecte conventions du repo. Pas d'approbation automatique."}
