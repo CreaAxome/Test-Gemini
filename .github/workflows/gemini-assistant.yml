@@ -10,16 +10,27 @@ permissions:
 
 jobs:
   assistant:
-    if: contains(github.event.comment.body, '/add-fireworks')
+    if: |
+      contains(github.event.comment.body, '/add-color-picker') ||
+      contains(github.event.comment.body, '/add-night-sky') ||
+      contains(github.event.comment.body, '/add-screenshot')
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
+      # (Optionnel) cache npm pour accélérer
+      - uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-npm-gemini-cli-0.1.22
+
       - name: Run Gemini CLI
         uses: google-github-actions/run-gemini-cli@v0.1.11
         with:
           gemini_api_key: ${{ secrets.GEMINI_API_KEY }}
-          prompt: "Ajoute une amélioration simple au projet Fireworks."
+          gemini_cli_version: 0.1.22
+          prompt: "Lis la commande du commentaire et applique le patch minimal demandé. Crée une PR."
           settings: |
             {"model":"gemini-2.5-pro",
-             "instructions":"FR. Patch minimal. Exemple : ajouter un bouton Screenshot pour sauvegarder le canvas, ou un slider pour ajuster le nombre de particules. Toujours mettre à jour README si besoin. Jamais d'approbation.",
+             "instructions":"FR. Patch minimal. Touchez uniquement index.html, app.js, styles.css, README.md si nécessaire. Ne jamais approuver une PR. Si le commentaire contient '/add-color-picker' => ajouter un input type=color en haut à droite; si '/add-night-sky' => ajouter un fond étoilé statique derrière le canvas (~200 étoiles); si '/add-screenshot' => ajouter un bouton pour télécharger le canvas en PNG via canvas.toDataURL. Mettre à jour README.",
              "pull_request":{"create_pr":true,"branch_prefix":"feat/gemini-"}}
